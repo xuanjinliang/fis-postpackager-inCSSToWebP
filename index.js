@@ -138,9 +138,10 @@ module.exports = function(ret, conf, settings, opt){
                     execFile(cwebp, (file.fullname + ' -q ' + quality +' -o ' + hash).split(/\s+/), function(err, stdout, stderr) {
                         if(err){
                             console.log(err);
+                        }else{
+                            nullwebpJson[hash] = quality;
+                            writeFile(webpCacheJson,JSON.stringify(nullwebpJson));
                         }
-                        nullwebpJson[hash] = quality;
-                        writeFile(webpCacheJson,JSON.stringify(nullwebpJson));
                     });
                 }else{
                     if(existFile){
