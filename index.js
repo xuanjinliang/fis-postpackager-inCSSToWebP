@@ -76,11 +76,10 @@ module.exports = function(ret, conf, settings, opt){
 
     fis.util.map(ret.src,function(subpath,file,i){
         if(file.isHtmlLike && !(ignoreFileReg && file.origin.match(ignoreFileReg))){
-            let content = file.getContent(),
-                ChangeContent = '';
-
-            if(rStyleScript.test(content)){
-                ChangeContent = content.replace(rStyleScript,function(v){
+            let ChangeContent = file.getContent();
+			
+            if(rStyleScript.test(ChangeContent)){
+                ChangeContent = ChangeContent.replace(rStyleScript,function(v){
                     if(styleUrl.test(v)){
                         let link = RegExp.$1.replace(/\'|\"/ig,'');
                         if(link.indexOf('__ignoreCss') < 0){
@@ -100,7 +99,7 @@ module.exports = function(ret, conf, settings, opt){
                 return m;
             });
 
-            ChangeContent = ChangeContent.replace(/<(img)\s+[\s\S]*?\/?>/ig,function(m, $1){
+            ChangeContent = ChangeContent.replace(/<(img)\s+[\s\S]*?\/?>/ig,function(m, $1){			
                 if($1 && imgSrc.test(m)){
                     let src = RegExp.$1.replace(/\'|\"/ig,'').trim();
 
@@ -113,7 +112,7 @@ module.exports = function(ret, conf, settings, opt){
                     }
                 }
             });
-
+			
             file.setContent(ChangeContent);
         }else if(file.isImage() && !/^_/.test(file.basename)){
             let dirPath = fis.project.getProjectPath();
