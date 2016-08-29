@@ -1,6 +1,6 @@
 {
   "name": "fis-postpackager-inCSSToWebP",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "fis把外链的css插入到html中",
   "main": "index.js",
   "scripts": {

@@ -110,7 +110,9 @@ module.exports = function(ret, conf, settings, opt){
                     }else{
                         return m;
                     }
-                }
+                }else{
+					return m;
+				}
             });
 			
             file.setContent(ChangeContent);
