@@ -4,6 +4,7 @@
 
 'use strict';
 const execFile = require('child_process').execFile,
+    fs = require('fs'),
     cwebp = require('cwebp-binLocal'),
     UglifyJS = require("uglify-js");
 
@@ -19,7 +20,6 @@ let rStyleScript = /(?:\s*(<link([^>]*?)(stylesheet){1}([^>]*?)(?:\/)?>))/ig,
 
 module.exports = function(ret, conf, settings, opt){
     let cssObj = {},
-        len = Object.keys(ret.src).length - 1,
         quality = settings.quality || 50;
     imgReg = settings.imgReg || 'jpg';
     ignoreFileReg = settings.ignoreFile || '';
@@ -54,17 +54,7 @@ module.exports = function(ret, conf, settings, opt){
     let webpJson = readFile(webpCacheJson),nullwebpJson = {};
     webpJson = JSON.parse(webpJson);
 
-    fis.util.map(ret.pkg, function(subpath, pkg, index) {
-        if(pkg.id.indexOf(".css") > -1 ){
-            let cssUrl = pkg.domain+pkg.release;
-            if(pkg.useHash){
-                cssUrl = cssUrl.replace('.css','') + fis.media().get('project.md5Connector', '_') + pkg.getHash() +'.css';
-            }
-            cssObj[cssUrl] = pkg.getContent();
-        }
-    });
-
-    fis.util.map(ret.ids, function(subpath, file) {
+    function search(file){
         if(file.id.indexOf(".css") > -1 ){
             let cssUrl = file.domain+file.release;
             if(file.useHash){
@@ -72,18 +62,34 @@ module.exports = function(ret, conf, settings, opt){
             }
             cssObj[cssUrl] = file.getContent();
         }
+    }
+
+    fis.util.map(ret.pkg, function(subpath, pkg, index) {
+        search(pkg);
+        /*if(pkg.id.indexOf(".css") > -1 ){
+            let cssUrl = pkg.domain+pkg.release;
+            if(pkg.useHash){
+                cssUrl = cssUrl.replace('.css','') + fis.media().get('project.md5Connector', '_') + pkg.getHash() +'.css';
+            }
+            console.log('pkg-->', cssUrl);
+            cssObj[cssUrl] = pkg.getContent();
+        }*/
+    });
+
+    fis.util.map(ret.ids, function(subpath, file) {
+        search(file);
     });
 
     fis.util.map(ret.src,function(subpath,file,i){
         if(file.isHtmlLike && !(ignoreFileReg && file.origin.match(ignoreFileReg))){
             let ChangeContent = file.getContent();
-			
+
             if(rStyleScript.test(ChangeContent)){
                 ChangeContent = ChangeContent.replace(rStyleScript,function(v){
                     if(styleUrl.test(v)){
                         let link = RegExp.$1.replace(/\'|\"/ig,'');
                         if(link.indexOf('__ignoreCss') < 0){
-                            return v.replace(v,'<style type="text/css">'+cssObj[link]+'</style>');
+                            return v.replace(v,'<replaceStyle style="display: none;">'+cssObj[link]+'</replaceStyle>');
                         }else{
                             return v.replace(/(\??|&?)__ignoreCss/,'');
                         }
@@ -99,7 +105,7 @@ module.exports = function(ret, conf, settings, opt){
                 return m;
             });
 
-            ChangeContent = ChangeContent.replace(/<(img)\s+[\s\S]*?\/?>/ig,function(m, $1){			
+            ChangeContent = ChangeContent.replace(/<(img)\s+[\s\S]*?\/?>/ig,function(m, $1){
                 if($1 && imgSrc.test(m)){
                     let src = RegExp.$1.replace(/\'|\"/ig,'').trim();
 
@@ -111,10 +117,10 @@ module.exports = function(ret, conf, settings, opt){
                         return m;
                     }
                 }else{
-					return m;
-				}
+                    return m;
+                }
             });
-			
+
             file.setContent(ChangeContent);
         }else if(file.isImage() && !/^_/.test(file.basename)){
             let dirPath = fis.project.getProjectPath();
@@ -160,7 +166,7 @@ module.exports = function(ret, conf, settings, opt){
 };
 
 function webpJs(){
-    let result = UglifyJS.minify(__dirname+'/load.js');
+    let result = UglifyJS.minify(fs.readFileSync(__dirname+'/load.js', "utf8"));
 
     if(jsContent.length <= 0){
         jsContent = result.code.replace(/\/\\\.jpg\/i/ig,replaceReg);

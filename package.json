@@ -1,6 +1,6 @@
 {
   "name": "fis-postpackager-inCSSToWebP",
-  "version": "1.0.6",
+  "version": "1.0.9",
   "description": "fis把外链的css插入到html中",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/xuanjinliang/fis-postpackager-inCSSToWebP#readme",
   "dependencies": {
-    "cwebp-binLocal": "1.0.1",
-    "uglify-js": "^2.7.0"
+    "cwebp-binLocal": "^1.0.2",
+    "uglify-js": "^3.3.5"
   }
 }
