@@ -58,8 +58,8 @@
             style.setAttribute('type','text/css');
             style.innerHTML = styleHtml;
             head[0].appendChild(style);
+            removeElement(o);
         }
-        removeElement(styleTag[0]);
 
         var fn = function(){
             var imgTag = getEleTags('img');
